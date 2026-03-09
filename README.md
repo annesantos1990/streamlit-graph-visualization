@@ -7,7 +7,7 @@ Este projeto é uma aplicação baseada em Streamlit projetada para comparar e a
 - **Controles Interativos**: Personalize cores, tamanhos e rótulos dos nós dinamicamente via barra lateral.
 - **Filtragem**: Alterne a visibilidade para diferentes tipos de nós (ex: Person, Movie).
 - **Múltiplos Motores de Visualização**:
-  - **PyVis**: Redes interativas poderosas baseadas em Python.
+  - **PyVis**: Redes interativas baseadas em Python.
   - **st_link_analysis**: Componente Streamlit especializado para análise de links.
   - **Cytoscape**: Visualização baseada em JS altamente personalizável com layouts especializados e arestas curvas.
   - **NVL (neo4j-viz)**: Integração usando a biblioteca `neo4j-viz` para visualizações padrão no estilo Neo4j.
