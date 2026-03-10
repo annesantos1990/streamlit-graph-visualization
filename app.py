@@ -30,97 +30,113 @@ node_types = sorted(set(data["type"] for _, data in G.nodes(data=True)))
 edge_types = sorted(set(data["type"] for _, _, data in G.edges(data=True)))
 
 # ---------------------------
-# SIDEBAR – ESTILO DOS NÓS
+# SIDEBAR – TABS
 # ---------------------------
 
-st.sidebar.header("Estilo dos Nós")
+# Criar uma lista de nomes para busca antecipadamente para usar em ambas as abas
+node_names = {data["name"]: str(node) for node, data in G.nodes(data=True)}
 
-node_style_map = {}
+def set_search(name):
+    st.session_state.node_search = name
 
-cols = st.sidebar.columns(len(node_types))
-
-for i, node_type in enumerate(node_types):
-
-    with cols[i]:
-
-        with st.popover(f"**{node_type}**"):
-
-            color = st.color_picker(
-                "Cor",
-                "#FF5733" if node_type == "Person" else "#33C3FF",
-                key=f"{node_type}_color"
-            )
-
-            size = st.slider(
-                "Tamanho",
-                5,
-                50,
-                25,
-                key=f"{node_type}_size"
-            )
-
-        node_style_map[node_type] = {
-            "color": st.session_state[f"{node_type}_color"],
-            "size": st.session_state[f"{node_type}_size"]
-        }
-
-# ---------------------------
-# ESTILO DOS VÍNCULOS
-# ---------------------------
-
-st.sidebar.subheader("Estilo dos Vínculos")
-
-edge_style_map = {}
-
-cols = st.sidebar.columns(len(edge_types))
-
-for i, edge_type in enumerate(edge_types):
-
-    with cols[i]:
-
-        with st.popover(f"**{edge_type}**"):
-
-            color = st.color_picker(
-                "Cor",
-                "#AAAAAA",
-                key=f"{edge_type}_color"
-            )
-
-            width = st.slider(
-                "Espessura",
-                1,
-                10,
-                3,
-                key=f"{edge_type}_width"
-            )
-
-        edge_style_map[edge_type] = {
-            "color": st.session_state[f"{edge_type}_color"],
-            "width": st.session_state[f"{edge_type}_width"]
-        }
-# -------------------------------------
-# Navegação
-# -------------------------------------
 def resetar_busca():
     st.session_state.node_search = ""
 
-st.sidebar.markdown("---")
-st.sidebar.subheader("Navegação")
-# Criar uma lista de nomes para busca
-node_names = {
-    data["name"]: str(node) for node,
-    data in G.nodes(data=True)}
-target_node_name = st.sidebar.selectbox(
-    "Pular para o nó:",
-    [""] + list(node_names.keys()),
-    key="node_search"
-)
+tab_estilos, tab_lista = st.sidebar.tabs(["Estilos", "Lista de Nós"])
 
-# Botão para limpar o foco
-st.sidebar.button(
-    "Limpar Foco",
-    on_click=resetar_busca
-)
+with tab_estilos:
+    st.header("Estilo dos Nós")
+
+    node_style_map = {}
+
+    # Ajustado para usar colunas dentro da tab
+    cols_node = st.columns(len(node_types))
+
+    for i, node_type in enumerate(node_types):
+        with cols_node[i]:
+            with st.popover(f"**{node_type}**"):
+                color = st.color_picker(
+                    "Cor",
+                    "#FF5733" if node_type == "Person" else "#33C3FF",
+                    key=f"{node_type}_color"
+                )
+                size = st.slider(
+                    "Tamanho",
+                    5,
+                    50,
+                    25,
+                    key=f"{node_type}_size"
+                )
+            node_style_map[node_type] = {
+                "color": st.session_state[f"{node_type}_color"],
+                "size": st.session_state[f"{node_type}_size"]
+            }
+
+    # ---------------------------
+    # ESTILO DOS VÍNCULOS
+    # ---------------------------
+    st.subheader("Estilo dos Vínculos")
+
+    edge_style_map = {}
+    cols_edge = st.columns(len(edge_types))
+
+    for i, edge_type in enumerate(edge_types):
+        with cols_edge[i]:
+            with st.popover(f"**{edge_type}**"):
+                color = st.color_picker(
+                    "Cor",
+                    "#AAAAAA",
+                    key=f"{edge_type}_color"
+                )
+                width = st.slider(
+                    "Espessura",
+                    1,
+                    10,
+                    3,
+                    key=f"{edge_type}_width"
+                )
+            edge_style_map[edge_type] = {
+                "color": st.session_state[f"{edge_type}_color"],
+                "width": st.session_state[f"{edge_type}_width"]
+            }
+
+    # -------------------------------------
+    # Navegação
+    # -------------------------------------
+    st.markdown("---")
+    st.subheader("Navegação")
+    
+    target_node_name = st.selectbox(
+        "Pular para o nó:",
+        [""] + list(node_names.keys()),
+        key="node_search"
+    )
+
+    # Botão para limpar o foco
+    st.button(
+        "Limpar Foco",
+        on_click=resetar_busca
+    )
+
+with tab_lista:
+    st.header("Lista de Nós")
+    
+    # Busca rápida na lista
+    search_term = st.text_input("Filtrar nós:", key="list_search_term")
+    
+    st.markdown("---")
+    
+    for node, data in G.nodes(data=True):
+        if search_term.lower() in data["name"].lower() or search_term.lower() in data["type"].lower():
+            col1, col2 = st.columns([3, 1])
+            with col1:
+                st.write(f"**{data['name']}**")
+                st.caption(f"Tipo: {data['type']}")
+            with col2:
+                # Usar on_click para evitar erro de modificação de session_state
+                st.button("Jump", key=f"jump_{node}", on_click=set_search, args=(data["name"],))
+            st.markdown("---")
+
 
 target_id = node_names.get(target_node_name)
 
