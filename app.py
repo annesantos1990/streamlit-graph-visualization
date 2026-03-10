@@ -98,6 +98,32 @@ for i, edge_type in enumerate(edge_types):
             "color": st.session_state[f"{edge_type}_color"],
             "width": st.session_state[f"{edge_type}_width"]
         }
+# -------------------------------------
+# Navegação
+# -------------------------------------
+def resetar_busca():
+    st.session_state.node_search = ""
+
+st.sidebar.markdown("---")
+st.sidebar.subheader("Navegação")
+# Criar uma lista de nomes para busca
+node_names = {
+    data["name"]: str(node) for node,
+    data in G.nodes(data=True)}
+target_node_name = st.sidebar.selectbox(
+    "Pular para o nó:",
+    [""] + list(node_names.keys()),
+    key="node_search"
+)
+
+# Botão para limpar o foco
+st.sidebar.button(
+    "Limpar Foco",
+    on_click=resetar_busca
+)
+
+target_id = node_names.get(target_node_name)
+
 # =========================================================
 # PYVIS
 # =========================================================
@@ -228,7 +254,6 @@ stylesheet = [
         }
     }
 ]
-
 for node_type in node_style_map:
 
     style = node_style_map[node_type]
@@ -241,6 +266,23 @@ for node_type in node_style_map:
             "height": style["size"]
         }
     })
+
+
+if target_id:
+    stylesheet.append({
+        "selector": f"node[id = '{target_id}']",
+        "style": {
+            "background-color": style["color"],
+            "width": style["size"] * 2,
+            "height": style["size"] * 2,
+            "border-width": 3,
+            "border-color": "#000"
+        }
+    })
+
+
+
+
 
 for edge_type in edge_style_map:
 
@@ -260,7 +302,7 @@ for edge_type in edge_style_map:
 selected_cy = cytoscape(
     elements=elements_cy,
     stylesheet=stylesheet,
-    layout={"name": "fcose"},
+    layout={"name": "cose", "fit": True},
     key="graph_cy"
 )
 
